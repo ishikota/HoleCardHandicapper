@@ -1,0 +1,3 @@
+*.pyc
+*.swp
+/learning_data/data/**/*.csv

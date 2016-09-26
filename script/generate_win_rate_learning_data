@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+"""
+HOW TO USE
+(It takes about 1sec to generate 1 data with 1000 simulation.)
+
+>> ./generate_win_rate_learning_data --data_num 1 --simulation 1000 --player 2 --street "preflop"
+Execution time : 0.890542 (s)
+>> ./generate_win_rate_learning_data --data_num 1 --simulation 1000 --player 2 --street "flop" --nosave
+Execution time : 1.023563 (s)
+
+"""
+
+# Resolve path configuration
+import os
+import sys
+import importlib
+import argparse
+import json
+
+root = os.path.join(os.path.dirname(__file__), "..")
+learning_data_path = os.path.join(root, "learning_data")
+sys.path.append(root)
+sys.path.append(learning_data_path)
+
+# Start script code from here
+from learning_data.generator.hole_evaluator import HoleEvaluator
+from pypokerengine.engine.card import Card
+import random
+import csv
+import time
+
+def parse_args():
+  parser = argparse.ArgumentParser(description="Set script configuration")
+  parser.add_argument("--data_num", type=int, required=True, help="the number of learning data to generate")
+  parser.add_argument("--simulation", type=int, required=True, help="times of simulation for each data")
+  parser.add_argument("--player", type=int, required=True, help="number of player in simulation")
+  parser.add_argument("--street", type=str, required=True, help="street to simulate for data")
+  parser.add_argument("--nosave", action='store_true', help="for checking execution time")
+  args = parser.parse_args()
+  if args.simulation <= 0 or args.player <= 1:
+    raise Exception("Invalid args")
+  return args.data_num, args.simulation, args.player, args.street, args.nosave
+
+def generate_data(data_num, simulation_num, player_num, street):
+  base_community_num = {"preflop":0, "flop":3, "turn":4, "river":5}[street]
+  data = []
+  for _ in range(data_num):
+      hole = HoleEvaluator.draw_unknown_card(draw_num=2, known_cards=[])
+      community = HoleEvaluator.draw_unknown_card(draw_num=base_community_num, known_cards=hole)
+      win_rate = HoleEvaluator.estimate_win_rate(hole, community, player_num, simulation_num)
+      row = [str(card) for card in hole+community]
+      row.append(win_rate)
+      data.append(row)
+  return data
+
+def save_data(file_path, data):
+  with open(file_path, 'w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerows(data)
+
+def gen_file_path(data_num, simulation_num, player_num, street):
+  file_name = "%d-data-%d-simulation-%d-players-win-rate-data.csv" % (data_num, simulation_num, player_num)
+  return os.path.join(learning_data_path, "data", "win_rate", street, file_name)
+
+def main():
+  start_time = time.time()
+  data_num, simulation, player, street, nosave_flg = parse_args()
+  data = generate_data(data_num, simulation, player, street)
+  if not nosave_flg:
+      save_data(gen_file_path(data_num, simulation, player, street), data)
+  print "Execution time : %f (s)" % (time.time() - start_time)
+
+if __name__ == '__main__':
+  main()
