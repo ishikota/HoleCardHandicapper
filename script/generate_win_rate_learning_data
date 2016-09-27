@@ -44,19 +44,33 @@ def parse_args():
 def generate_data(data_num, simulation_num, player_num, street):
   base_community_num = {"preflop":0, "flop":3, "turn":4, "river":5}[street]
   data = []
+  data.append(generate_header(base_community_num))
   for _ in range(data_num):
       hole = HoleEvaluator.draw_unknown_card(draw_num=2, known_cards=[])
+      hole_id = [card.to_id() for card in hole]
       community = HoleEvaluator.draw_unknown_card(draw_num=base_community_num, known_cards=hole)
+      community_id = [card.to_id() for card in community]
       win_rate = HoleEvaluator.estimate_win_rate(hole, community, player_num, simulation_num)
       row = [str(card) for card in hole+community]
       row.append(win_rate)
+      row += hole_id + community_id
       data.append(row)
   return data
 
+def generate_header(community_num):
+    hole = ["hole1", "hole2"]
+    hole_id = ["%s_id"%base for base in hole]
+    community = ["community%d"%(i+1) for i in range(community_num)]
+    community_id = ["%s_id"%base for base in community]
+    win_rate = ["win_rate"]
+    return hole + community + win_rate + hole_id + community_id
+
 def save_data(file_path, data):
+  header, rows = data[0], data[1:]
   with open(file_path, 'w') as f:
     writer = csv.writer(f, lineterminator='\n')
-    writer.writerows(data)
+    writer.writerow(header)
+    writer.writerows(rows)
 
 def gen_file_path(data_num, simulation_num, player_num, street):
   file_name = "%d-data-%d-simulation-%d-players-win-rate-data.csv" % (data_num, simulation_num, player_num)
