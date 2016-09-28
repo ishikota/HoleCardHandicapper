@@ -1,3 +1,4 @@
 *.pyc
 *.swp
 /learning_data/data/**/*.csv
+**/.ipynb_checkpoints/**
