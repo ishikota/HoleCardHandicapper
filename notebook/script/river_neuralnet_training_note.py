@@ -7,7 +7,7 @@ root = os.path.join(os.path.dirname(__file__), "..", "..")
 script_dir = os.path.join(root, "notebook", "script")
 timestamp = time.time()
 print "timestamp of this script is %d" % timestamp
-gen_save_file_path = lambda suffix: os.path.join(script_dir, "turn_neuralnet_training_note_%d.%s" % (timestamp, suffix))
+gen_save_file_path = lambda suffix: os.path.join(script_dir, "river_neuralnet_training_note_%d.%s" % (timestamp, suffix))
 
 # # Import learning data
 
@@ -83,18 +83,21 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout
 
 model = Sequential()
-model.add(Dense(60, input_dim=104))
+model.add(Dense(256, input_dim=104))
+model.add(Activation("relu"))
+model.add(Dropout(0.5))
+model.add(Dense(64))
 model.add(Activation("relu"))
 model.add(Dropout(0.5))
 model.add(Dense(1))
-model.compile(loss="mse",  optimizer="rmsprop")
+model.compile(loss="mse",  optimizer="adam")
 
 
 # # Train model
 
 # In[29]:
 
-history = model.fit(train_x, train_y, batch_size=128, nb_epoch=10, validation_split=0.1, verbose=2)
+history = model.fit(train_x, train_y, batch_size=128, nb_epoch=2000, validation_split=0.1, verbose=2)
 
 import json
 with open(gen_save_file_path("json"), "wb") as f:
