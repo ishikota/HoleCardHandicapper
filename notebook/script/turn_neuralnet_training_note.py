@@ -15,9 +15,12 @@ gen_save_file_path = lambda suffix: os.path.join(script_dir, "turn_neuralnet_tra
 
 import pandas as pd
 
-training_data_path = root + "/learning_data/data/win_rate/turn/50000-data-1000-simulation-2-players-win-rate-data.csv"
+training_data1_path = root + "/learning_data/data/win_rate/turn/50000-data-1000-simulation-2-players-win-rate-data.csv"
+training_data2_path = root + "/learning_data/data/win_rate/turn/100000-data-1000-simulation-2-players-win-rate-data.csv"
 test_data_path = root + "/learning_data/data/win_rate/turn/10000-data-1000-simulation-2-players-win-rate-data.csv"
-train_df = pd.read_csv(training_data_path)
+train1_df = pd.read_csv(training_data1_path)
+train2_df = pd.read_csv(training_data2_path)
+train_df = train1_df.append(train2_df, ignore_index=True)
 test_df = pd.read_csv(test_data_path)
 
 
@@ -97,7 +100,7 @@ model.compile(loss="mse",  optimizer="adam")
 
 # In[31]:
 
-history = model.fit(train_x, train_y, batch_size=128, nb_epoch=2000, validation_split=0.1, verbose=2)
+history = model.fit(train_x, train_y, batch_size=128, nb_epoch=3000, validation_split=0.1, verbose=2)
 
 import json
 with open(gen_save_file_path("json"), "wb") as f:
