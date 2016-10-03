@@ -50,19 +50,22 @@ test_df.describe()
 # In[26]:
 
 import numpy as np
+from pypokerengine.engine.card import Card
 
 fetch_hole = lambda row: [row[key] for key in ['hole1_id', 'hole2_id']]
 fetch_community = lambda row: [row[key] for key in ['community1_id', 'community2_id', 'community3_id', 'community4_id', 'community5_id']]
-gen_one_hot_vec_row = lambda target_ids: [1 if i in target_ids else 0 for i in range(1,53)]
-gen_one_hot_vec = lambda zipped: [gen_one_hot_vec_row(card_id) for card_id in [zipped[0], zipped[1]]]
+gen_card_rank_vec = lambda card: [1 if r == card.rank else 0 for r in range(2,15)]
+gen_card_suit_vec = lambda card: [1 if s == card.suit else 0 for s in [Card.CLUB, Card.DIAMOND, Card.HEART, Card.SPADE]]
+gen_card_vec = lambda card: gen_card_rank_vec(card) + gen_card_suit_vec(card)
+gen_img = lambda zipped: [gen_card_vec(Card.from_id(card_id)) for card_id in zipped[0]+zipped[1]]
 
 train_hole = train_df.apply(lambda row: fetch_hole(row), axis=1)
 train_community = train_df.apply(lambda row: fetch_community(row), axis=1)
-train_df["onehot"] = map(gen_one_hot_vec, zip(train_hole, train_community))
+train_df["onehot"] = map(gen_img, zip(train_hole, train_community))
 
 test_hole = test_df.apply(lambda row: fetch_hole(row), axis=1)
 test_community = test_df.apply(lambda row: fetch_community(row), axis=1)
-test_df["onehot"] = map(gen_one_hot_vec, zip(test_hole, test_community))
+test_df["onehot"] = map(gen_img, zip(test_hole, test_community))
 
 
 # ## Format data (pandas.df -> numpy.ndarray)
@@ -88,31 +91,36 @@ from keras.layers.core import Dense, Activation, Dropout, Flatten
 
 model = Sequential()
 
-model.add(Convolution2D(32, 2, 2, border_mode="same", input_shape=(1, 2, 52)))
+model.add(Convolution2D(256, 3, 3, border_mode="same", input_shape=(1, 7, 17)))
 model.add(Activation("relu"))
-model.add(Convolution2D(32, 2, 2, border_mode="same"))
+model.add(Convolution2D(256, 3, 3, border_mode="same"))
 model.add(Activation("relu"))
-model.add(Dropout(0.5))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
 
-model.add(Convolution2D(32, 2, 2, border_mode="same"))
+model.add(Convolution2D(256, 3, 3, border_mode="same"))
 model.add(Activation("relu"))
-model.add(Convolution2D(32, 2, 2, border_mode="same"))
+model.add(Convolution2D(256, 3, 3, border_mode="same"))
 model.add(Activation("relu"))
-model.add(Dropout(0.5))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
 
 model.add(Flatten())
 model.add(Dense(512))
 model.add(Activation("relu"))
 model.add(Dropout(0.5))
+model.add(Dense(256))
+model.add(Activation("relu"))
+model.add(Dropout(0.5))
 model.add(Dense(1))
-model.compile(loss="mse",  optimizer="adam")
+model.compile(loss="mse",  optimizer="adadelta")
 
 
 # # Train model
 
 # In[29]:
 
-history = model.fit(train_x, train_y, batch_size=128, nb_epoch=1000, validation_split=0.1, verbose=2)
+history = model.fit(train_x, train_y, batch_size=128, nb_epoch=500, validation_split=0.1, verbose=2)
 
 import json
 with open(gen_save_file_path("json"), "wb") as f:
@@ -169,18 +177,22 @@ test_case = [
 ]
 
 to_id = lambda card: card.to_id()
-gen_one_hot_vec_row = lambda target_ids: [1 if i in target_ids else 0 for i in range(1,53)]
-gen_one_hot_vec = lambda zipped: [gen_one_hot_vec_row(card_id) for card_id in [zipped[0],zipped[1]]]
+gen_card_rank_vec = lambda card: [1 if r == card.rank else 0 for r in range(2,15)]
+gen_card_suit_vec = lambda card: [1 if s == card.suit else 0 for s in [Card.CLUB, Card.DIAMOND, Card.HEART, Card.SPADE]]
+gen_card_vec = lambda card: gen_card_rank_vec(card) + gen_card_suit_vec(card)
+gen_img = lambda zipped: [gen_card_vec(Card.from_id(card_id)) for card_id in zipped[0]+zipped[1]]
 wrap = lambda lst: np.array(lst)
 to_ndarray = lambda X: wrap([wrap(x) for x in X])
 
 for card1, card2, card3, card4, card5, card6, card7, expected in test_case:
     cards = [Card(rank=rank, suit=suit) for rank, suit in [card1, card2, card3, card4, card5, card6, card7]]
-    hole_ids = map(to_id, cards[:2])
-    community_ids = map(to_id, cards[2:])
-    x = gen_one_hot_vec((hole_ids, community_ids))
+    hole = cards[:2]
+    community = cards[2:]
+    hole_ids = map(to_id, hole)
+    community_ids = map(to_id, community)
+    x = gen_img((hole_ids, community_ids))
     X = to_ndarray(x)
     X = np.array([X.reshape(1, X.shape[0], X.shape[1])])
     y = model.predict(X)[0][0]
-    print "HOLE = [%s, %s], COMMUNITY = [%s, %s, %s, %s, %s] => win_rate = { prediction=%f, expected=%f }" % tuple(map(str, hole_ids) + map(str, community_ids) + [y , expected])
+    print "HOLE = [%s, %s], COMMUNITY = [%s, %s, %s, %s, %s] => win_rate = { prediction=%f, expected=%f }" % tuple(map(str, hole) + map(str, community) + [y , expected])
 
