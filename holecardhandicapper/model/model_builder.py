@@ -10,11 +10,11 @@ class ModelBuilder:
     if PREFLOP == street:
       return self.build_preflop_model()
     elif FLOP == street:
-      return self.build_preflop_model()
+      return self.build_flop_model()
     elif TURN == street:
-      return self.build_preflop_model()
+      return self.build_turn_model()
     elif RIVER == street:
-      return self.build_preflop_model()
+      return self.build_river_model()
 
 
   @classmethod
