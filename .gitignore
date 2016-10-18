@@ -2,3 +2,7 @@
 *.swp
 /learning_data/data/**/*.csv
 **/.ipynb_checkpoints/**
+*.egg-info
+.pypirc
+dist
+build
