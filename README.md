@@ -18,7 +18,7 @@ You can check out sample code for all street (preflop, flop, turn, river)
 - https://github.com/ishikota/HoleCardHandicapper/blob/master/sample/how_to_use.py
 
 ## Installation
-Under construction :bow:
+'pip install HoleCardHandicapper'
 
 ## Dependency
 - [Keras](https://github.com/fchollet/keras)
