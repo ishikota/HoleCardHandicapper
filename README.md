@@ -1,5 +1,6 @@
 # HoleCardHandicapper
 [![PyPI](https://img.shields.io/pypi/v/HoleCardHandicapper.svg?maxAge=2592000)]([![PyPI](https://img.shields.io/pypi/v/nine.svg?maxAge=2592000)](https://github.com/ishikota/HoleCardHandicapper))
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/ishikota/kyoka/blob/master/LICENSE.md)
 
 *HoleCardHandicapper* makes a prediction of heads-up win rates on poker hands.  
 
