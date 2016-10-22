@@ -11,7 +11,7 @@ from pypokerengine.engine.card import Card
 model = Neuralnet("preflop")
 model.compile()
 holecard = [Card(suit=Card.HEART, rank=1), Card(suit=Card.SPADE, rank=1)]
-model.predict(holecard) // returns 0.850103
+model.predict(holecard) # returns 0.850103
 ```
 
 You can check out sample code for all street (preflop, flop, turn, river)
