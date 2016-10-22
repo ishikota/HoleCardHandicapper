@@ -4,7 +4,7 @@
 
 *HoleCardHandicapper* makes a prediction of heads-up win rates on poker hands.  
 
-```
+```python
 from holecardhandicapper.model.neuralnet import Neuralnet
 from pypokerengine.engine.card import Card
 
