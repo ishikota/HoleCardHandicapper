@@ -2,13 +2,14 @@ from keras.models import Sequential
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.layers.core import Dense, Activation, Dropout, Flatten
 from holecardhandicapper.model.const import PREFLOP, FLOP, TURN, RIVER
+from holecardhandicapper.model.utils import Utils
 
 class ModelBuilder:
 
   @classmethod
   def build_model(self, street):
     if PREFLOP == street:
-      return self.build_preflop_model()
+      return self.build_preflop_cache_model()
     elif FLOP == street:
       return self.build_flop_model()
     elif TURN == street:
@@ -16,6 +17,9 @@ class ModelBuilder:
     elif RIVER == street:
       return self.build_river_model()
 
+  @classmethod
+  def build_preflop_cache_model(self):
+      return CacheModel()
 
   @classmethod
   def build_preflop_model(self):
@@ -113,4 +117,15 @@ class ModelBuilder:
     model.add(Dense(1))
     model.compile(loss="mse",  optimizer="adadelta")
     return model
+
+class CacheModel(object):
+
+  def predict(self, X):
+    ids = [i for i in range(len(X[0])) if X[0][i]==1]
+    ids = [i+1 for i in ids]
+    win_rate = self.table[ids[0]][ids[1]]
+    return [[win_rate]]
+
+  def load_weights(self, _filepath):
+    self.table = Utils.build_preflop_winrate_table()
 

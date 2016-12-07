@@ -10,7 +10,7 @@ setup(
     keywords = 'python poker hand predict evaluate evaluator',
     url = 'https://github.com/ishikota/HoleCardHandicapper',
     packages = ['holecardhandicapper', 'holecardhandicapper.model', ],
-    package_data = {'holecardhandicapper' : ['model/weights/*.h5']},
+    package_data = {'holecardhandicapper' : ['model/weights/*.h5', 'model/data/preflop_winrate.csv']},
     install_requires = ['Keras==1.0.4', 'h5py==2.6.0', 'PyPokerEngine==0.0.1'],
     classifiers=[
         "Development Status :: 5 - Production/Stable",

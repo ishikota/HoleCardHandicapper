@@ -1,7 +1,27 @@
 import os
+import csv
 from holecardhandicapper.model.const import PREFLOP, FLOP, TURN, RIVER
 
 class Utils:
+
+  @classmethod
+  def build_preflop_winrate_table(self):
+    fpath = self.get_preflop_winrate_data_path()
+    table = [[0 for j in range(53)] for i in range(53)]
+    with open(fpath, "rb") as f:
+      reader = csv.reader(f)
+      data = []
+      for id1, id2, win_rate in reader:
+        id1, id2 = map(int, [id1, id2])
+        win_rate = float(win_rate)
+        table[id1][id2] = win_rate
+    return table
+
+  @classmethod
+  def get_preflop_winrate_data_path(self):
+    root = self.__get_root_path()
+    return os.path.join(root, "holecardhandicapper", "model", "data", "preflop_winrate.csv")
+
 
   @classmethod
   def get_model_weights_path(self, street):

@@ -4,6 +4,11 @@ from holecardhandicapper.model.utils import Utils
 
 class UtilsTest(BaseUnitTest):
 
+  def test_build_preflop_winrate_table(self):
+    table = Utils.build_preflop_winrate_table()
+    self.eq(0.616, table[4][24])
+    self.eq(0, table[24][4])
+
   def test_get_preflop_model_path(self):
     expected = os.path.normpath(os.path.join(self.get_root(), "holecardhandicapper", "model", "weights", "preflop_neuralnet_model_weights.h5"))
     self.eq(expected, os.path.normpath(Utils.get_model_weights_path("preflop")))
