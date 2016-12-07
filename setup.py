@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name = 'HoleCardHandicapper',
-    version = '1.2.0',
+    version = '1.2.1',
     author = 'ishikota',
     author_email = 'ishikota086@gmail.com',
     description = 'NeuralNet for poker hands evaluation ',
