@@ -10,7 +10,7 @@ class NeuralnetTest(BaseUnitTest):
     model.compile()
     hole = [Card(suit=Card.HEART, rank=1), Card(suit=Card.SPADE, rank=1)]
     prediction = model.predict(hole)
-    self.almosteq(0.85, prediction, 0.01)
+    self.eq(0.862, prediction)
 
   def test_predict_on_flop(self):
     model = Neuralnet("flop")
