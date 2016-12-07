@@ -7,17 +7,34 @@ from holecardhandicapper.model.const import PREFLOP, FLOP, TURN, RIVER
 
 class Neuralnet(object):
 
-  def __init__(self, street):
+  def __init__(self, street, debug=False):
     self.model = None
     self.street = street
+    self.cache_holecard_ids = None
+    self.cache_communitycard_ids = None
+    self.cache_win_rate = None
+    self.debugmode = debug
 
   def compile(self):
     self.model = ModelBuilder.build_model(self.street)
     self.model.load_weights(Utils.get_model_weights_path(self.street))
 
   def predict(self, hole, community=[]):
+    hole_ids, community_ids = [c.to_id() for c in hole], [c.to_id() for c in community]
+    if hole_ids == self.cache_holecard_ids and community_ids == self.cache_communitycard_ids:
+        if self.debugmode: self.__print_cache_hit_log(hole, community)
+        return self.cache_win_rate
     X = self.__generate_input_vector(self.street, hole, community)
-    return self.model.predict(X)[0][0]
+    win_rate = self.model.predict(X)[0][0]
+
+    self.cache_holecard_ids = hole_ids
+    self.cache_communitycard_ids = community_ids
+    self.cache_win_rate = win_rate
+    return win_rate
+
+  def __print_cache_hit_log(self, hole, community):
+    print "cache hit!! with hole=%s, community=%s" % (
+            [str(c) for c in hole], [str(c) for c in community])
 
   def __read_json_from_file(self, filepath):
     with open(filepath, "rb") as f:
